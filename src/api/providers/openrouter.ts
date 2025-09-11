@@ -41,6 +41,7 @@ type OpenRouterProviderParams = {
 }
 // kilocode_change end
 import { handleOpenAIError } from "./utils/openai-error-handler"
+import { getToolRegistry } from "../../core/prompts/tools/schemas/tool-registry"
 
 // Image generation types
 interface ImageGenerationResponse {
@@ -218,6 +219,10 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 			...(transforms && { transforms }),
 			...(reasoning && { reasoning }),
 		}
+		if (metadata?.tools && metadata.tools.length > 0) {
+			completionParams.tools = getToolRegistry().generateFunctionCallSchemas(metadata.tools!, metadata.toolArgs!)
+			completionParams.tool_choice = "auto"
+		}
 
 		let stream
 		try {
@@ -269,8 +274,8 @@ export class OpenRouterHandler extends BaseProvider implements SingleCompletionH
 				}
 				// kilocode_change end
 
-				if (delta?.content) {
-					yield { type: "text", text: delta.content }
+				if (delta?.tool_calls) {
+					yield { type: "tool_call", toolCalls: delta.tool_calls, toolCallType: "openai" }
 				}
 
 				if (chunk.usage) {
