@@ -35,10 +35,11 @@ export async function applyDiffToolLegacy(
 				const startLine = diff?.d1
 				const search = diff?.d2
 				const replace = diff?.d3
-				if (i > 0) {
-					tmpDiff += "\n>>>>>>> REPLACE\n\n"
-				}
+
 				if (startLine) {
+					if (i > 0) {
+						tmpDiff += "\n>>>>>>> REPLACE\n\n"
+					}
 					tmpDiff += `<<<<<<< SEARCH\n:start_line:${startLine}`
 				}
 				if (startLine && search) {
