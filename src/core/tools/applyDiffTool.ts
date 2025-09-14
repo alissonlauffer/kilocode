@@ -56,7 +56,7 @@ export async function applyDiffToolLegacy(
 					const startLine = diff?.start_line
 					const search = diff?.search
 					const replace = diff?.replace
-					if (startLine !== undefined && search && replace !== undefined) {
+					if (startLine !== undefined && search && replace !== undefined && search !== replace) {
 						tmpDiff += `<<<<<<< SEARCH\n:start_line:${startLine}\n-------\n${search}\n=======\n${replace}\n>>>>>>> REPLACE\n\n`
 					}
 				}

@@ -155,7 +155,7 @@ export async function applyDiffTool(
 									diffContent += `=======\n${replace}\n>>>>>>> REPLACE\n]]>`
 								}
 							} else {
-								if (search && replace !== undefined) {
+								if (search && replace !== undefined && search !== replace) {
 									diffContent += `<![CDATA[\n<<<<<<< SEARCH\n${search}\n=======\n${replace}\n>>>>>>> REPLACE\n]]>`
 								} else {
 									continue
