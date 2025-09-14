@@ -148,14 +148,14 @@ export async function applyDiffTool(
 							const replace = diff?.replace
 							diffContent = ""
 							if (block.partial) {
-								if (search !== undefined) {
+								if (search) {
 									diffContent += `<![CDATA[\n<<<<<<< SEARCH\n${search}\n`
 								}
-								if (search !== undefined && replace !== undefined) {
+								if (search && replace !== undefined) {
 									diffContent += `=======\n${replace}\n>>>>>>> REPLACE\n]]>`
 								}
 							} else {
-								if (search !== undefined && replace !== undefined) {
+								if (search && replace !== undefined) {
 									diffContent += `<![CDATA[\n<<<<<<< SEARCH\n${search}\n=======\n${replace}\n>>>>>>> REPLACE\n]]>`
 								} else {
 									continue

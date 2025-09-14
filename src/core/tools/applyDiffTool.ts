@@ -33,9 +33,9 @@ export async function applyDiffToolLegacy(
 			if (block.partial) {
 				for (let i = 0; i < diffs.length; i++) {
 					const diff = diffs[i]
-					const startLine = diff?.d1
-					const search = diff?.d2
-					const replace = diff?.d3
+					const startLine = diff?.start_line
+					const search = diff?.search
+					const replace = diff?.replace
 
 					if (startLine !== undefined) {
 						if (i > 0) {
@@ -43,20 +43,20 @@ export async function applyDiffToolLegacy(
 						}
 						tmpDiff += `<<<<<<< SEARCH\n:start_line:${startLine}`
 					}
-					if (startLine !== undefined && search !== undefined) {
+					if (startLine !== undefined && search) {
 						tmpDiff += `\n-------\n${search}`
 					}
-					if (startLine !== undefined && search !== undefined && replace !== undefined) {
+					if (startLine !== undefined && search && replace !== undefined) {
 						tmpDiff += `\n=======\n${replace}`
 					}
 				}
 			} else {
 				for (let i = 0; i < diffs.length; i++) {
 					const diff = diffs[i]
-					const startLine = diff?.d1
-					const search = diff?.d2
-					const replace = diff?.d3
-					if (startLine !== undefined && search !== undefined && replace !== undefined) {
+					const startLine = diff?.start_line
+					const search = diff?.search
+					const replace = diff?.replace
+					if (startLine !== undefined && search && replace !== undefined) {
 						tmpDiff += `<<<<<<< SEARCH\n:start_line:${startLine}\n-------\n${search}\n=======\n${replace}\n>>>>>>> REPLACE\n\n`
 					}
 				}

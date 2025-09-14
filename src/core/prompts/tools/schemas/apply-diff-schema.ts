@@ -27,26 +27,26 @@ ALWAYS make as many changes in a single 'apply_diff' request as possible using m
 				items: {
 					name: "diffItem",
 					type: "object",
-					description: "A single search-and-replace operation.",
+					description: "A single search/replace operation.",
 					required: true,
 					properties: {
-						d1: {
+						start_line: {
 							name: "start_line",
 							type: "number",
 							description: "The line number of original content where the search block starts.",
 							required: true,
 						},
-						d2: {
+						search: {
 							name: "search",
 							type: "string",
 							description:
-								"SEARCH BLOCK. MUST exactly match existing content including whitespace and indentation.",
+								"SEARCH BLOCK. MUST exactly match existing content including whitespace and indentation. If this string is not the exact literal text (i.e. you escaped it) or does not match exactly, the tool will fail.",
 							required: true,
 						},
-						d3: {
+						replace: {
 							name: "replace",
 							type: "string",
-							description: "REPLACE BLOCK.",
+							description: "REPLACE BLOCK. The exact literal text to replace `search`",
 							required: true,
 						},
 					},
