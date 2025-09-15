@@ -7,11 +7,18 @@ export function generateApplyDiffSchema(args: ToolArgs): BaseToolSchema {
 	}
 	const schema: BaseToolSchema = {
 		name: "apply_diff",
-		description: `Request to apply PRECISE, TARGETED modifications to an existing file by searching for specific sections of content and replacing them. This tool is for SURGICAL EDITS ONLY - specific changes to existing code.
-You can perform multiple distinct search and replace operations within a single \`apply_diff\` call by providing multiple SEARCH/REPLACE blocks in the \`diff\` parameter. This is the preferred way to make several targeted changes efficiently.
-If you're not confident in the exact content to search for, use the read_file tool first to get the exact content.
-When applying the diffs, be extra careful to remember to change any closing brackets or other syntax that may be affected by the diff farther down in the file.
-ALWAYS make as many changes in a single 'apply_diff' request as possible using multiple SEARCH/REPLACE blocks`,
+		description: `File edit tool. Apply precise, targeted modifications to existing files using search-and-replace operations. This tool is designed for SURGICAL EDITS to existing code, NOT for creating new files or making wholesale changes.
+
+PURPOSE: Make specific changes to existing code by locating exact text patterns and replacing them.
+
+RULES:
+1. MUST use exact text matching - include all whitespace, indentation, and punctuation
+2. Use read_file tool FIRST if unsure about exact content
+3. Make multiple changes in ONE call using multiple SEARCH/REPLACE blocks
+4. Check for affected syntax (brackets, parentheses) throughout the file
+5. Prefer this tool over rewriting entire functions or files
+
+CRITICAL: Search text must match the file content EXACTLY or the operation will fail.`,
 		parameters: [
 			{
 				name: "path",
@@ -40,13 +47,14 @@ ALWAYS make as many changes in a single 'apply_diff' request as possible using m
 							name: "search",
 							type: "string",
 							description:
-								"SEARCH BLOCK. MUST exactly match existing content including whitespace and indentation. If this string is not the exact literal text (i.e. you escaped it) or does not match exactly, the tool will fail.",
+								"SEARCH BLOCK: The exact text to find in the file. Must match PRECISELY including all whitespace, tabs, and indentation. Copy directly from the file - do not modify or escape the text.",
 							required: true,
 						},
 						replace: {
 							name: "replace",
 							type: "string",
-							description: "REPLACE BLOCK. The exact literal text to replace `search`",
+							description:
+								"REPLACE BLOCK: The new text to replace the search block with. Include proper indentation and formatting.",
 							required: true,
 						},
 					},
@@ -149,13 +157,18 @@ Only use a single line of '=======' between search and replacement content, beca
 function generateMultipleApplyDiffSchema(args: ToolArgs): BaseToolSchema {
 	const schema: BaseToolSchema = {
 		name: "apply_diff",
-		description: `Request to apply PRECISE, TARGETED modifications to one or more files by searching for specific sections of content and replacing them. This tool is for SURGICAL EDITS ONLY - specific changes to existing code. This tool supports both single-file and multi-file operations, allowing you to make changes across multiple files in a single request.
-**IMPORTANT: You MUST use multiple files in a single operation whenever possible to maximize efficiency and minimize back-and-forth.**
-You can perform multiple distinct search and replace operations within a single \`apply_diff\` call by providing multiple SEARCH/REPLACE blocks in the \`diff\` parameter. This is the preferred way to make several targeted changes efficiently.
-The SEARCH section must exactly match existing content including whitespace and indentation.
-If you're not confident in the exact content to search for, use the read_file tool first to get the exact content.
-When applying the diffs, be extra careful to remember to change any closing brackets or other syntax that may be affected by the diff farther down in the file.
-ALWAYS make as many changes in a single 'apply_diff' request as possible using multiple SEARCH/REPLACE blocks`,
+		description: `File edit tool. Apply precise, targeted modifications to one or more files using search-and-replace operations. This is the PREFERRED multi-file version that supports batch operations across multiple files for maximum efficiency.
+
+PURPOSE: Make specific changes to existing code by locating exact text patterns and replacing them across multiple files in a single operation.
+
+RULES:
+1. **BATCH FIRST**: ALWAYS use multiple files in a single operation when possible
+2. **EXACT MATCHING**: Search text must match file content PRECISELY 
+3. **READ FIRST**: Use read_file tool if unsure about exact content
+4. **EFFICIENCY**: Group related changes across files into one call
+5. **SYNTAX AWARENESS**: Check for affected syntax throughout files
+
+CRITICAL: This tool maximizes efficiency by handling multiple files at once - use it whenever you need to make changes to more than one file.`,
 		parameters: [
 			{
 				name: "file",
@@ -177,7 +190,8 @@ ALWAYS make as many changes in a single 'apply_diff' request as possible using m
 						diff: {
 							name: "diff",
 							type: "array",
-							description: "One or more diff elements containing.",
+							description:
+								"One or more diff operations for this file - batch multiple changes per file for efficiency.",
 							required: true,
 							items: {
 								name: "diffItem",
@@ -190,13 +204,14 @@ ALWAYS make as many changes in a single 'apply_diff' request as possible using m
 										name: "search",
 										type: "string",
 										description:
-											"SEARCH BLOCK. MUST exactly match existing content including whitespace and indentation.",
+											"SEARCH BLOCK: The exact text to find in the file. Must match PRECISELY including all whitespace, tabs, and indentation. Copy directly from the file - do not modify or escape the text.",
 										required: true,
 									},
 									replace: {
 										name: "replace",
 										type: "string",
-										description: "REPLACE BLOCK.",
+										description:
+											"REPLACE BLOCK: The new text to replace the search block with. Include proper indentation and formatting.",
 										required: true,
 									},
 									start_line: {
