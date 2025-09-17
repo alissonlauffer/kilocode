@@ -14,9 +14,10 @@ PURPOSE: Make specific changes to existing code by locating exact text patterns 
 RULES:
 1. MUST use exact text matching - include all whitespace, indentation, and punctuation
 2. Use read_file tool FIRST if unsure about exact content
-3. Make multiple changes in ONE call using multiple SEARCH/REPLACE blocks
-4. Check for affected syntax (brackets, parentheses) throughout the file
-5. Prefer this tool over rewriting entire functions or files
+3. Should use apply_diff more finely, the smallest unit is a line or multiple lines, not the function.
+4. Make multiple changes in ONE call using multiple diff
+5. Check for affected syntax (brackets, parentheses) throughout the file
+6. Prefer this tool over rewriting entire functions or files
 
 CRITICAL: Search text must match the file content EXACTLY or the operation will fail.`,
 		parameters: [
@@ -29,7 +30,23 @@ CRITICAL: Search text must match the file content EXACTLY or the operation will 
 			{
 				name: "diff",
 				type: "array",
-				description: "The search/replace block defining the changes.",
+				description: `The search/replace block defining the changes.
+
+Original file:
+\`\`\`
+1 | def calculate_total(items):
+2 |     total = 0
+3 |     for item in items:
+4 |         total += item
+5 |     return total
+\`\`\`
+
+Search/Replace Example:
+[{"start_line":1,"search":"def calculate_total(items):\n    total = 0\n    for item in items:\n        total += item\n    return total","replace":"def calculate_total(items):\n    \"\"\"Calculate total with 10% markup\"\"\"\n    return sum(item * 1.1 for item in items)"}]
+
+Multiple Search/Replace Ex:
+[{"start_line":1,"search":"def calculate_total(items):\n    sum = 0","replace":"def calculate_sum(items):\n    sum = 0"},{"start_line":4,"search":"        total += item\n    return total","replace":"        sum += item\n    return sum "}]
+`,
 				required: true,
 				items: {
 					name: "diffItem",
