@@ -52,22 +52,8 @@ Replace the entire TODO list with an updated checklist reflecting the current st
 			{
 				name: "todos",
 				type: "string",
-				description: `The complete TODO list without prefix '-'.
-
-**Usage Example:**
-[x] Analyze requirements
-[x] Design architecture
-[-] Implement core logic
-[ ] Write tests
-[ ] Update documentation
-
-*After completing "Implement core logic" and starting "Write tests":*
-[x] Analyze requirements
-[x] Design architecture
-[x] Implement core logic
-[-] Write tests
-[ ] Update documentation
-[ ] Add performance benchmarks					`,
+				description:
+					"The complete TODO list in Markdown checklist format. Use '[ ]' for pending, '[x]' for completed, and '[-]' for in-progress tasks.",
 				required: true,
 			},
 		],
