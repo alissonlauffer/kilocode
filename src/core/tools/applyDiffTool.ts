@@ -43,10 +43,10 @@ export async function applyDiffToolLegacy(
 						}
 						tmpDiff += `<<<<<<< SEARCH\n:start_line:${startLine}`
 					}
-					if (startLine !== undefined && search) {
+					if (startLine !== undefined && search !== undefined) {
 						tmpDiff += `\n-------\n${search}`
 					}
-					if (startLine !== undefined && search && replace !== undefined) {
+					if (startLine !== undefined && search != undefined && replace !== undefined) {
 						tmpDiff += `\n=======\n${replace}`
 					}
 				}
