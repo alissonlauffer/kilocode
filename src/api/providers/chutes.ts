@@ -9,6 +9,8 @@ import { convertToOpenAiMessages } from "../transform/openai-format"
 import { ApiStream } from "../transform/stream"
 
 import { BaseOpenAiCompatibleProvider } from "./base-openai-compatible-provider"
+import { ApiHandlerCreateMessageMetadata } from ".."
+import { getToolRegistry } from "../../core/prompts/tools/schemas/tool-registry"
 
 export class ChutesHandler extends BaseOpenAiCompatibleProvider<ChutesModelId> {
 	constructor(options: ApiHandlerOptions) {
@@ -44,7 +46,11 @@ export class ChutesHandler extends BaseOpenAiCompatibleProvider<ChutesModelId> {
 		}
 	}
 
-	override async *createMessage(systemPrompt: string, messages: Anthropic.Messages.MessageParam[]): ApiStream {
+	override async *createMessage(
+		systemPrompt: string,
+		messages: Anthropic.Messages.MessageParam[],
+		metadata?: ApiHandlerCreateMessageMetadata,
+	): ApiStream {
 		const model = this.getModel()
 		const useR1Format = model.id.includes("DeepSeek-R1")
 
@@ -53,8 +59,15 @@ export class ChutesHandler extends BaseOpenAiCompatibleProvider<ChutesModelId> {
 			...(useR1Format ? convertToR1Format(messages) : convertToOpenAiMessages(messages)),
 		]
 
+		const completionParams = this.getCompletionParams(systemPrompt, messages)
+
+		if (metadata?.tools && metadata.tools.length > 0) {
+			completionParams.tools = getToolRegistry().generateFunctionCallSchemas(metadata.tools!, metadata.toolArgs!)
+			completionParams.tool_choice = "auto"
+		}
+
 		const stream = await this.client.chat.completions.create({
-			...this.getCompletionParams(systemPrompt, messages),
+			...completionParams,
 			messages: openAiMessages,
 		})
 
@@ -74,6 +87,10 @@ export class ChutesHandler extends BaseOpenAiCompatibleProvider<ChutesModelId> {
 				for (const processedChunk of matcher.update(delta.content)) {
 					yield processedChunk
 				}
+			}
+
+			if (delta?.tool_calls) {
+				yield { type: "tool_call", toolCalls: delta.tool_calls, toolCallType: "openai" }
 			}
 
 			if (chunk.usage) {
