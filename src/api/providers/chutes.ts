@@ -46,46 +46,48 @@ export class ChutesHandler extends BaseOpenAiCompatibleProvider<ChutesModelId> {
 
 	override async *createMessage(systemPrompt: string, messages: Anthropic.Messages.MessageParam[]): ApiStream {
 		const model = this.getModel()
+		const useR1Format = model.id.includes("DeepSeek-R1")
 
-		if (model.id.includes("DeepSeek-R1")) {
-			const stream = await this.client.chat.completions.create({
-				...this.getCompletionParams(systemPrompt, messages),
-				messages: convertToR1Format([{ role: "user", content: systemPrompt }, ...messages]),
-			})
+		const openAiMessages: OpenAI.Chat.ChatCompletionMessageParam[] = [
+			{ role: "system", content: systemPrompt },
+			...(useR1Format ? convertToR1Format(messages) : convertToOpenAiMessages(messages)),
+		]
 
-			const matcher = new XmlMatcher(
-				"think",
-				(chunk) =>
-					({
-						type: chunk.matched ? "reasoning" : "text",
-						text: chunk.data,
-					}) as const,
-			)
+		const stream = await this.client.chat.completions.create({
+			...this.getCompletionParams(systemPrompt, messages),
+			messages: openAiMessages,
+		})
 
-			for await (const chunk of stream) {
-				const delta = chunk.choices[0]?.delta
+		const matcher = new XmlMatcher(
+			"think",
+			(chunk) =>
+				({
+					type: chunk.matched ? "reasoning" : "text",
+					text: chunk.data,
+				}) as const,
+		)
 
-				if (delta?.content) {
-					for (const processedChunk of matcher.update(delta.content)) {
-						yield processedChunk
-					}
-				}
+		for await (const chunk of stream) {
+			const delta = chunk.choices[0]?.delta
 
-				if (chunk.usage) {
-					yield {
-						type: "usage",
-						inputTokens: chunk.usage.prompt_tokens || 0,
-						outputTokens: chunk.usage.completion_tokens || 0,
-					}
+			if (delta?.content) {
+				for (const processedChunk of matcher.update(delta.content)) {
+					yield processedChunk
 				}
 			}
 
-			// Process any remaining content
-			for (const processedChunk of matcher.final()) {
-				yield processedChunk
+			if (chunk.usage) {
+				yield {
+					type: "usage",
+					inputTokens: chunk.usage.prompt_tokens || 0,
+					outputTokens: chunk.usage.completion_tokens || 0,
+				}
 			}
-		} else {
-			yield* super.createMessage(systemPrompt, messages)
+		}
+
+		// Process any remaining content
+		for (const processedChunk of matcher.final()) {
+			yield processedChunk
 		}
 	}
 
